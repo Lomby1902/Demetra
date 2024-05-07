@@ -1,0 +1,15 @@
+artifact_uri: file:///home/giovanni/Scrivania/Demetra/mlruns/0/673e01c610a1442ebd6551c1d6fe7f7e/artifacts
+end_time: 1714905737001
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 673e01c610a1442ebd6551c1d6fe7f7e
+run_name: LASSO with CD
+run_uuid: 673e01c610a1442ebd6551c1d6fe7f7e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1714905736895
+status: 3
+tags: []
+user_id: giovanni
