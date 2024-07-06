@@ -1,0 +1,16 @@
+artifact_uri: file:///home/ubuntu/Desktop/Demetra/mlruns/436328954428294746/8f11f694ed964fa0818939e4fb6fda14/artifacts
+deleted_time: 1720288197220
+end_time: 1720287768692
+entry_point_name: ''
+experiment_id: '436328954428294746'
+lifecycle_stage: deleted
+run_id: 8f11f694ed964fa0818939e4fb6fda14
+run_name: 0.25 ripartition
+run_uuid: 8f11f694ed964fa0818939e4fb6fda14
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1720287676018
+status: 3
+tags: []
+user_id: ubuntu
