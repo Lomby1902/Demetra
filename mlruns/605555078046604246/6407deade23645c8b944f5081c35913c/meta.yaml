@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/605555078046604246/6407deade23645c8b944f5081c35913c/artifacts
+end_time: 1720374233437
+entry_point_name: ''
+experiment_id: '605555078046604246'
+lifecycle_stage: active
+run_id: 6407deade23645c8b944f5081c35913c
+run_name: 0.45 ripartition
+run_uuid: 6407deade23645c8b944f5081c35913c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1720374183986
+status: 3
+tags: []
+user_id: ubuntu
