@@ -1,0 +1,185 @@
+# PIPELINE DEFINITION
+# Name: ridge-mse
+components:
+  comp-get-x:
+    executorLabel: exec-get-x
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: LIST
+  comp-get-y:
+    executorLabel: exec-get-y
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: LIST
+  comp-train-model:
+    executorLabel: exec-train-model
+    inputDefinitions:
+      parameters:
+        X:
+          parameterType: LIST
+        Y:
+          parameterType: LIST
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: NUMBER_DOUBLE
+deploymentSpec:
+  executors:
+    exec-get-x:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - get_X
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'boto3'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef get_X() -> list:\n    import pandas as pd\n    import boto3\n\
+          \    # Initialize the S3 client with MinIO configurations\n    s3_client\
+          \ = boto3.client(\n        's3',\n        endpoint_url = \"http://localhost:9000\"\
+          ,\n        aws_access_key_id = \"minio\",\n        aws_secret_access_key\
+          \ = \"minio123\"\n    )\n\n    # Fetch the CSV file from the MinIO bucket\n\
+          \    response = s3_client.get_object(Bucket=\"files\", Key=\"LEAF_LEVEL_DATASET_Yufeng_Ge.xlsx\"\
+          )\n    csv_content = response['Body'].read().decode('utf-8')\n\n    # Read\
+          \ and load dataset\n    df= pd.read_excel(csv_content, sheet_name=[0, 1])\n\
+          \    X =df.get(0)\n    X = (X.iloc[:,14:]).values\n    print(X.shape)\n\
+          \    Y =df.get(0)\n    Y = (Y.iloc[:,7]).values\n    print(Y.shape)\n\n\
+          \    return X.tolist()\n\n"
+        image: python:3.8
+    exec-get-y:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - get_Y
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'boto3'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef get_Y() -> list:\n    import pandas as pd\n    import boto3\n\
+          \    # Initialize the S3 client with MinIO configurations\n    s3_client\
+          \ = boto3.client(\n        's3',\n        endpoint_url = \"http://localhost:9000\"\
+          ,\n        aws_access_key_id = \"minio\",\n        aws_secret_access_key\
+          \ = \"minio123\"\n    )\n\n    # Fetch the CSV file from the MinIO bucket\n\
+          \    response = s3_client.get_object(Bucket=\"files\", Key=\"LEAF_LEVEL_DATASET_Yufeng_Ge.xlsx\"\
+          )\n    csv_content = response['Body'].read().decode('utf-8')\n\n    # Read\
+          \ and load dataset\n    df= pd.read_excel(csv_content, sheet_name=[0, 1])\n\
+          \    Y =df.get(0)\n    Y = (Y.iloc[:,7]).values\n    print(Y.shape)\n\n\
+          \    return Y.tolist()\n\n"
+        image: python:3.8
+    exec-train-model:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_model
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'scikit-learn'\
+          \ 'pandas' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_model(X:list, Y:list) -> float:\n    from sklearn.model_selection\
+          \ import train_test_split\n    from sklearn.linear_model import Ridge\n\
+          \    from sklearn.metrics import mean_squared_error\n    alpha = 0.000018528437399658637\n\
+          \n    run_name = str(ripartition) + \" ripartition\"\n    print(run_name)\n\
+          \    #Ripartition in training and test and\n    X_train, X_test, Y_train,\
+          \ Y_test = train_test_split(X, Y, test_size=ripartition, random_state=seeds[i])\n\
+          \    ridge_reg_cl = Ridge(solver=\"cholesky\", alpha = alpha)\n\n    ridge_reg_cl.fit(X_train,Y_train)\n\
+          \n    # Make predictions using the testing set\n    Y_pred_ridge_cl =  evolved_estimator.predict(X_test)\n\
+          \n    #save MSE of the first parameters\n    return mean_squared_error(Y_test,\
+          \ Y_pred_ridge_cl) \n\n"
+        image: python:3.8
+pipelineInfo:
+  name: ridge-mse
+root:
+  dag:
+    tasks:
+      get-x:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-get-x
+        taskInfo:
+          name: get-x
+      get-y:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-get-y
+        taskInfo:
+          name: get-y
+      train-model:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-model
+        dependentTasks:
+        - get-x
+        - get-y
+        inputs:
+          parameters:
+            X:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: get-x
+            Y:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: get-y
+        taskInfo:
+          name: train-model
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0
