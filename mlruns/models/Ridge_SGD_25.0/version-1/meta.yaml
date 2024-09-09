@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1725549418764
+current_stage: None
+description: ''
+last_updated_timestamp: 1725549418764
+name: Ridge_SGD_25.0
+run_id: 6d47e1496dcc4bc1bd7a199d5284e977
+run_link: ''
+source: mlflow-artifacts:/164607447859336018/6d47e1496dcc4bc1bd7a199d5284e977/artifacts/sklearn-model
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/164607447859336018/6d47e1496dcc4bc1bd7a199d5284e977/artifacts/sklearn-model
+user_id: null
+version: 1

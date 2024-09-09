@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1725842256266
+current_stage: None
+description: ''
+last_updated_timestamp: 1725842256266
+name: LASSO_SGD_25.0
+run_id: ad44a355e5d44d458aa72771fd50a274
+run_link: ''
+source: mlflow-artifacts:/314482338071603067/ad44a355e5d44d458aa72771fd50a274/artifacts/sklearn-model
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/314482338071603067/ad44a355e5d44d458aa72771fd50a274/artifacts/sklearn-model
+user_id: null
+version: 1

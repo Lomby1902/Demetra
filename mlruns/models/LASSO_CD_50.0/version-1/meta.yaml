@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1725662171803
+current_stage: None
+description: ''
+last_updated_timestamp: 1725662171803
+name: LASSO_CD_50.0
+run_id: 6ad0e847019d40c7954b30fb31b99f15
+run_link: ''
+source: mlflow-artifacts:/110309075387274856/6ad0e847019d40c7954b30fb31b99f15/artifacts/sklearn-model
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/110309075387274856/6ad0e847019d40c7954b30fb31b99f15/artifacts/sklearn-model
+user_id: null
+version: 1

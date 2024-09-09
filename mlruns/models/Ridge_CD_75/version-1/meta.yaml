@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1725448071721
+current_stage: None
+description: ''
+last_updated_timestamp: 1725448071721
+name: Ridge_CD_75
+run_id: cb16d205e0e9440d99f72f5c240bb588
+run_link: ''
+source: mlflow-artifacts:/166235950366679891/cb16d205e0e9440d99f72f5c240bb588/artifacts/model_0.75
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/166235950366679891/cb16d205e0e9440d99f72f5c240bb588/artifacts/model_0.75
+user_id: null
+version: 1
