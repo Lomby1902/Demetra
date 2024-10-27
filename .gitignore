@@ -3,3 +3,4 @@
 /mlruns
 /mlartifacts
 /datasets
+__pycache__/
