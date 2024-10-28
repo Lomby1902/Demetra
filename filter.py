@@ -1,6 +1,7 @@
 import numpy as np
 from math import sqrt, log
 import matplotlib.pyplot as plt
+import random
 
 class Gaussian_filter:
     def __init__(self,lambda_min,lambda_max,constrain_min, constrain_max):
@@ -15,6 +16,14 @@ class Gaussian_filter:
     def _read_signals(self,x,n_signals):
         signals = x[:n_signals,:]
         return signals
+    
+
+    def _generate_random_colors(self,n):
+        colors = []
+        for _ in range(n):
+            color = (random.random(), random.random(), random.random())
+            colors.append(color)
+        return colors
     
     def _create_filters(self):
         if self._plot:     
@@ -54,14 +63,12 @@ class Gaussian_filter:
             filtered_signals.append(filtered_signal)
 
         if self._plot:
-            colors = ["r","g","b","k"]
-
+            colors = self._generate_random_colors(n_signals)
             x = np.arange(self.lambda_min, self.lambda_max + 1, dtype=int) #1nm delta
-
             i = 0
             for signal, filtered_signal in zip(signals,filtered_signals):
-                ax_right.plot(x, signal,"--",color=colors[i], label=f"Signal {i+1}")
-                ax_right.plot(self._mu_list,filtered_signal,color=colors[i],label=f"Filtered Signal {i+1}")
+                ax_right.plot(x, signal,"--", label=f"Signal {i+1}", color = colors[i])
+                ax_right.plot(self._mu_list,filtered_signal,label=f"Filtered Signal {i+1}", color = colors[i])
                 i+=1
 
             ax_right.legend()
