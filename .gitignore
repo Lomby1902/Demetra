@@ -4,3 +4,4 @@
 /mlartifacts
 /datasets
 __pycache__/
+*.png
