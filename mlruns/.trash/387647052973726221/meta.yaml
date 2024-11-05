@@ -1,7 +1,0 @@
-artifact_location: mlflow-artifacts:/387647052973726221
-creation_time: 1720367772733
-experiment_id: '387647052973726221'
-last_update_time: 1720370004634
-lifecycle_stage: deleted
-name: Linear SVD Nitrogen Demetra
-tags: {}
