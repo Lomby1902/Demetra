@@ -10,8 +10,8 @@ from sklearn.metrics import make_scorer
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
-import threading
 import random
+from matplotlib.ticker import MaxNLocator
 
 
 class fixed_size_GA():
@@ -52,8 +52,10 @@ class fixed_size_GA():
         for i in range(self._N):
             I = np.random.permutation(np.arange(self._n))[:self._m]
             C[i][I] = 1
-        self._population = C
 
+        
+        self._population = self._compute_fitness_list(C)
+        self._order_population()
 
     def get_population(self):
         return[individual for individual in self._population]
@@ -120,12 +122,8 @@ class fixed_size_GA():
                         E.append(j)
 
                 x = np.random.randint(self._m)
-                part1 = O[:x]
-                part2 = E[x:self._m]
-                O_new = part1 + part2
-                part1 = E[:x]
-                part2 = O[x:self._m]
-                E_new = part1 + part2
+                O_new = O[:x] + E[x:self._m]
+                E_new = E[:x] + O[x:self._m]
                 O_new = self._check(O_new,O,E)
                 E_new = self._check(E_new,O,E)
 
@@ -159,7 +157,6 @@ class fixed_size_GA():
         new_individual(list) : individual checked
         '''
 
-        somma = sum(individual)
         if np.sum(individual) > self._m:
             new_individual = np.zeros(self._n,dtype=int)
             indices = np.where(individual == 1)[0]
@@ -173,7 +170,7 @@ class fixed_size_GA():
             new_individual[indices] = 0
 
         else:
-            new_individual = individual
+            return individual
         return new_individual
 
     def _mutation(self,best_individuals):
@@ -183,25 +180,17 @@ class fixed_size_GA():
 
         Parameters:
         best_individuals (int): best individuals selected
-
-        Return:
-        new_individuals (list) : list of mutated offrsping
         '''
 
-        new_individuals = np.zeros((len(best_individuals),self._n),dtype=int)
+        
         for i in range(len(best_individuals)):
             for j in range(len(best_individuals[i])):
                 if np.random.random() < self._crossm:
-                     new_individuals[i][j] = not best_individuals[i][j]
-
+                    best_individuals[i][j] = not best_individuals[i][j]
             #check mutation
-            new_individuals[i]= self._check_mutation(new_individuals[i])
+            best_individuals[i]= self._check_mutation(best_individuals[i])
         
-
-        for individual in new_individuals:
-            if sum(individual) != self._m:
-                pass
-        return new_individuals
+        return best_individuals
 
     def _NEGNRMSEPiqr(self,observed_values, predicted_values):
         '''
@@ -246,26 +235,21 @@ class fixed_size_GA():
         # Use the mean score as the fitness value (higher is better)
         return np.mean(scores)
 
-    def _ordered_score(self):
+    def _order_population(self):
         """
-        Function to compute an ordered list containing individuals and associated fitness
+        Function to order population 
 
-        Returns:
-        best_individuals (list): list of the nbest individuals with fitness score
         """
+        self._population.sort(reverse=True, key=lambda x: x[1])
 
-        fitness_scores = []
-        for i,individual in enumerate(self._population):
-            fitness_scores.append((i,self._fitness_function(individual)))
+    def _compute_fitness_list(self,list):
+        result = []
+        for individual in list:
+            result.append((individual,self._fitness_function(individual)))
 
-        fitness_scores.sort(reverse=True, key=lambda x: x[1])
+        return result
         
-        # Get best nbest individuals with realtive score
-        best_individuals = [(self._population[individual[0]], individual[1]) for individual in fitness_scores]
-
-        return best_individuals
-
-    def _fix_population_size(self, new_individuals, best_individuals):
+    def _fix_population_size(self, new_individuals):
         '''
         This function is used if the size of the produced
         offspring is less than population size. When this happen,
@@ -276,11 +260,10 @@ class fixed_size_GA():
 
         Parameters:
         new_individuals(list) :individuals selected for reproduction
-        best_individuals(list) : ordered list with best individuals
         '''
-        self._population[:new_individuals.shape[0]] = new_individuals
-        for i in range(new_individuals.shape[0],self._N):
-            self._population[i] = best_individuals[i - new_individuals.shape[0]][0]
+        new_individuals_with_fitness = self._compute_fitness_list(new_individuals)
+        self._population = new_individuals_with_fitness + self._population
+        self._population = self._population[:self._N]
   
     def run(self,generations= 50,nbest=10):
         '''
@@ -288,29 +271,31 @@ class fixed_size_GA():
 
         Parameters:
         new_individuals(list) :List of new generated individuals
-        nbest(int) : Number of individuals to select for reproduction
+        nbest(int) : Number of individuals to select for reproduction. It must be even
 
 
         Returns:
         fitness_history(list) : list containing for each generation the 
                                 fitness value of the best individual.
         '''
+        if nbest%2 != 0 :
+            print("nbest must be odd")
+            return
         self._fitness_history = []
 
         #Gen 0 score
-        best_individuals = self._ordered_score()
-        self._fitness_history.append(best_individuals[0])
+        self._fitness_history.append(self._population[0])
 
         total_time = time.time()
         for gen in range(generations):
             start_time = time.time()
-            new_individuals = self._crossover(best_individuals[:nbest])
-            #new_individuals = self._mutation(new_individuals)
-            self._fix_population_size(new_individuals,best_individuals)
-            best_individuals = self._ordered_score()
-            self._fitness_history.append(best_individuals[0])
+            new_individuals = self._crossover(self._population[:nbest])
+            new_individuals = self._mutation(new_individuals)
+            self._fix_population_size(new_individuals)
+            self._order_population()
+            self._fitness_history.append(self._population[0])
             end_time = time.time() - start_time
-            print(f"Generation {gen + 1} completed. Fitness: {best_individuals[0][1]}, elapsed time(sec): {end_time}.")
+            print(f"Generation {gen + 1} completed. Fitness: {self._population[0][1]}, elapsed time(sec): {end_time}.")
 
         total_time = start_time - total_time
         print("")
@@ -320,23 +305,23 @@ class fixed_size_GA():
         best = max(self._fitness_history, key= lambda x:x[1])
         print(f"Best individual: {np.where(best[0]==1)[0]} score = {best[1]}")
         plt.plot(np.arange(len(self._fitness_history)),[individual[1] for individual in self._fitness_history])
-        plt.title("Fitness over generations")
+        plt.title("Fitness over generations" + "\n" + f"{generations} generations, " +  f"{self._m} components, " + f"best fitness: {best[1]}")
         plt.ylabel("Fitness")
         plt.xlabel("Generations")
-        plt.xticks(np.arange(len(self._fitness_history)))
+        plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+        
         plt.show()
 
         return self._fitness_history
 
 
-pop_size = 100
-fixed_components = 100
-crossp = 1
-crossm = 0.2
-n_generations = 50
-n_best = 50
+pop_size = 5000
+fixed_components = 42
+crossp = 0.5
+crossm = 0.01
+n_generations = 1000
+n_best = 500
 ga = fixed_size_GA(pop_size,fixed_components,crossp,crossm)
-
 ga.run(n_generations ,n_best)
 
 
