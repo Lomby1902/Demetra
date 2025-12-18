@@ -7,3 +7,5 @@ __pycache__/
 *.png
 *.xlsx
 *.txt
+/venv_tf/
+*.deb
