@@ -16,18 +16,18 @@ from matplotlib.ticker import MaxNLocator
 
 class fixed_size_GA():
 
-    def __init__(self,N:100,m:10, crossp=0.7,crossm = 0.7):
+    def __init__(self,N:100,m:10, crossp=0.7,mutp = 0.7):
         '''
         Parameters:
         N (int) Number of individuals per population (population size).
         m (int): Number of fixed components.
         crossp (float) crossover probability.
-        crossm (float) mutation probability.
+        mutp (float) mutation probability.
         '''
         self._N = N
         self._m = m
         self._crossp = crossp
-        self._crossm = crossm
+        self._mutp = mutp
         
         self._NEGNRMSEPiqrscorer = make_scorer(self._NEGNRMSEPiqr)
         
@@ -113,8 +113,8 @@ class fixed_size_GA():
         while i < len(best_individuals):
             O = []
             E = []
-            prob = np.random.random()
-            if  prob < self._crossp:
+            rng = np.random.default_rng()
+            if  rng.random() < self._crossp:
                 for j in range(self._n):
                     if best_individuals[i][0][j] == 1:
                         O.append(j)
@@ -127,10 +127,6 @@ class fixed_size_GA():
                 O_new = self._check(O_new,O,E)
                 E_new = self._check(E_new,O,E)
 
-                if np.array_equal(O,O_new):
-                    pass
-                if np.array_equal(E,E_new):
-                    pass
                 for h in range(self._m):
                     new_individuals[i][O_new[h]] = 1
                     new_individuals[i+1][E_new[h]] = 1
@@ -147,8 +143,7 @@ class fixed_size_GA():
     def _check_mutation(self,individual):
         '''
         This method check if after mutation the number 
-        of 1s is still equal to m. If not it will remove or
-        add 1 until the requirement will be respected.
+        of 1s is still equal to m.
 
         Paramater:
         individual(list) : individual to check
@@ -185,7 +180,8 @@ class fixed_size_GA():
         
         for i in range(len(best_individuals)):
             for j in range(len(best_individuals[i])):
-                if np.random.random() < self._crossm:
+                rng = np.random.default_rng()
+                if  rng.random() < self._mutp:
                     best_individuals[i][j] = not best_individuals[i][j]
             #check mutation
             best_individuals[i]= self._check_mutation(best_individuals[i])
@@ -265,7 +261,7 @@ class fixed_size_GA():
         self._population = new_individuals_with_fitness + self._population
         self._population = self._population[:self._N]
   
-    def run(self,generations= 50,nbest=10):
+    def run(self,threshold, target, nbest):
         '''
         Function to run the genetic algorithm for the user.
 
@@ -287,7 +283,8 @@ class fixed_size_GA():
         self._fitness_history.append(self._population[0])
 
         total_time = time.time()
-        for gen in range(generations):
+        gen = 0
+        while (target - self._fitness_history[-1][1]) >= threshold:  
             start_time = time.time()
             new_individuals = self._crossover(self._population[:nbest])
             new_individuals = self._mutation(new_individuals)
@@ -296,6 +293,7 @@ class fixed_size_GA():
             self._fitness_history.append(self._population[0])
             end_time = time.time() - start_time
             print(f"Generation {gen + 1} completed. Fitness: {self._population[0][1]}, elapsed time(sec): {end_time}.")
+            gen+=1
 
         total_time = start_time - total_time
         print("")
@@ -305,7 +303,7 @@ class fixed_size_GA():
         best = max(self._fitness_history, key= lambda x:x[1])
         print(f"Best individual: {np.where(best[0]==1)[0]} score = {best[1]}")
         plt.plot(np.arange(len(self._fitness_history)),[individual[1] for individual in self._fitness_history])
-        plt.title("Fitness over generations" + "\n" + f"{generations} generations, " +  f"{self._m} components, " + f"best fitness: {best[1]}")
+        plt.title("Fitness over generations" + "\n" + f"{gen} generations, " +  f"{self._m} components, " + f"best fitness: {best[1]}")
         plt.ylabel("Fitness")
         plt.xlabel("Generations")
         plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
@@ -317,12 +315,13 @@ class fixed_size_GA():
 
 pop_size = 5000
 fixed_components = 42
-crossp = 0.5
-crossm = 0.01
-n_generations = 1000
-n_best = 500
-ga = fixed_size_GA(pop_size,fixed_components,crossp,crossm)
-ga.run(n_generations ,n_best)
+crossp = 0.9
+mutp = 0.0001
+threshold = 0.001
+target = -0.3578
+n_best = 4500
+ga = fixed_size_GA(pop_size,fixed_components,crossp,mutp)
+ga.run(threshold,target,n_best)
 
 
 
